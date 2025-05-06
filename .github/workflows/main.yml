@@ -43,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./mywebsite/Dockerfile  # Update the path to match your directory structure
+          file: ./mywebsite  # Update the path to match your directory structure
 
           push: true
           tags: yourdockerhubuser/redo:latest
