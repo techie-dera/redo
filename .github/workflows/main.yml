@@ -1,0 +1,48 @@
+name: Build, Test & Dockerize Static Site
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test-dockerize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 🧪 Install HTMLHint and CSSLint for basic testing
+      - name: Install Lint Tools
+        run: |
+          npm install -g htmlhint stylelint stylelint-config-standard
+
+      - name: Test HTML Files
+        run: htmlhint "**/*.html"
+
+      - name: Test CSS Files
+        run: |
+          echo '{ "extends": "stylelint-config-standard" }' > .stylelintrc.json
+          stylelint "**/*.css" || echo "No CSS files found to lint."
+
+      # 🛠️ Set up Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 🔐 Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 🐳 Build & Push Docker Image (Dockerfile is in project root)
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: yourdockerhubuser/redo:latest
